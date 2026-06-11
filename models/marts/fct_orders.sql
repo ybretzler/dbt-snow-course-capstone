@@ -27,7 +27,6 @@ lineitems_agg as (
         sum(quantity)                as total_quantity,
         sum(extended_price)          as total_extended_price,
         sum(net_price)               as total_net_price,
-        sum(gross_price)             as total_gross_price,
         avg(discount_fraction)       as avg_discount,
         min(ship_date)               as first_ship_date,
         max(ship_date)               as last_ship_date,
@@ -38,11 +37,7 @@ lineitems_agg as (
 
 final as (
     select
-
-        -- Natural key
         o.order_id,
-
-        -- Dimensions
         o.customer_id,
         o.customer_name,
         o.customer_market_segment,
@@ -53,33 +48,20 @@ final as (
         o.order_status,
         o.order_priority,
         o.clerk_id,
-
-        -- Date dimensions
         o.order_date,
         o.order_year,
-        o.order_month,
         o.order_quarter,
-        o.order_month_start,
-
-        -- Source metrics (from order header)
         o.order_total_price,
-
-        -- Computed line-level rollups
         l.line_item_count,
         l.total_quantity,
         l.total_extended_price,
         l.total_net_price,
-        l.total_gross_price,
         l.avg_discount,
         l.first_ship_date,
         l.last_ship_date,
         l.returned_line_count,
-
-        -- Derived flags
         case when l.returned_line_count > 0 then true else false end as has_returns,
         case when o.order_status = 'Fulfilled' then true else false end as is_fulfilled,
-
-        -- Metadata
         current_timestamp() as dbt_loaded_at
 
     from orders_enriched o

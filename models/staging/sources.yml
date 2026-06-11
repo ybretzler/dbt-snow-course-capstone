@@ -30,14 +30,16 @@ sources:
             tests:
               - not_null
               - relationships:
-                  to: source('tpch', 'customer')
-                  field: C_CUSTKEY
+                  arguments:
+                    to: source('tpch', 'customer')
+                    field: C_CUSTKEY
           - name: O_ORDERSTATUS
             description: Single-character order status code.
             tests:
               - not_null
               - accepted_values:
-                  values: ['O', 'F', 'P']
+                  arguments:
+                    values: ['O', 'F', 'P']
           - name: O_TOTALPRICE
             description: Total price of the order in USD cents.
             tests: [not_null]
@@ -70,8 +72,9 @@ sources:
             tests:
               - not_null
               - relationships:
-                  to: source('tpch', 'nation')
-                  field: N_NATIONKEY
+                  arguments:
+                    to: source('tpch', 'nation')
+                    field: N_NATIONKEY
           - name: C_PHONE
             description: Customer phone number.
           - name: C_ACCTBAL
@@ -108,8 +111,9 @@ sources:
             tests:
               - not_null
               - relationships:
-                  to: source('tpch', 'orders')
-                  field: O_ORDERKEY
+                  arguments:
+                    to: source('tpch', 'orders')
+                    field: O_ORDERKEY
           - name: L_PARTKEY
             description: Foreign key to PART.P_PARTKEY.
             tests: [not_null]

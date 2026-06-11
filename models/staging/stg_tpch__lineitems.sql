@@ -5,7 +5,7 @@
 with
 
 source as (
-    select * from SNOWFLAKE_SAMPLE_DATA.TPCH_SF1.LINEITEM
+    select * from {{source('tpch', 'lineitems')}}
 ),
 
 renamed as (

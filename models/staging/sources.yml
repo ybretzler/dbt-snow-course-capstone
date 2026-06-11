@@ -1,0 +1,148 @@
+version: 2
+
+sources:
+  - name: tpch
+    description: >
+      TPC-H benchmark data provided as a Snowflake sample dataset.
+      All raw tables live in SNOWFLAKE_SAMPLE_DATA.TPCH_SF1.
+      Use this source definition to reference raw data instead of
+      hardcoding database/schema names in model SQL.
+    database: SNOWFLAKE_SAMPLE_DATA
+    schema: TPCH_SF1
+
+    # ── Freshness monitoring ─────────────────────────────────────────────────
+    # Run:  dbt source freshness
+    freshness:
+      warn_after:  {count: 7000, period: hour}
+      error_after: {count: 12000, period: hour}
+
+    tables:
+      # ── ORDERS ─────────────────────────────────────────────────────────────
+      - name: orders
+        description: One row per customer order. Contains order header information.
+        loaded_at_field: O_ORDERDATE
+        columns:
+          - name: O_ORDERKEY
+            description: Unique order identifier (primary key).
+            tests: [not_null, unique]
+          - name: O_CUSTKEY
+            description: Foreign key to CUSTOMER.C_CUSTKEY.
+            tests:
+              - not_null
+              - relationships:
+                  to: source('tpch', 'customer')
+                  field: C_CUSTKEY
+          - name: O_ORDERSTATUS
+            description: Single-character order status code.
+            tests:
+              - not_null
+              - accepted_values:
+                  values: ['O', 'F', 'P']
+          - name: O_TOTALPRICE
+            description: Total price of the order in USD cents.
+            tests: [not_null]
+          - name: O_ORDERDATE
+            description: Date the order was placed.
+            tests: [not_null]
+          - name: O_ORDERPRIORITY
+            description: Order priority classification.
+          - name: O_CLERK
+            description: Identifier of the clerk who processed the order.
+          - name: O_SHIPPRIORITY
+            description: Ship priority code.
+          - name: O_COMMENT
+            description: Free-text comment on the order.
+
+      # ── CUSTOMER ────────────────────────────────────────────────────────────
+      - name: customer
+        description: One row per customer. Contains customer master data.
+        columns:
+          - name: C_CUSTKEY
+            description: Unique customer identifier (primary key).
+            tests: [not_null, unique]
+          - name: C_NAME
+            description: Customer name.
+            tests: [not_null]
+          - name: C_ADDRESS
+            description: Customer mailing address.
+          - name: C_NATIONKEY
+            description: Foreign key to NATION.N_NATIONKEY.
+            tests:
+              - not_null
+              - relationships:
+                  to: source('tpch', 'nation')
+                  field: N_NATIONKEY
+          - name: C_PHONE
+            description: Customer phone number.
+          - name: C_ACCTBAL
+            description: Customer account balance.
+          - name: C_MKTSEGMENT
+            description: Market segment the customer belongs to.
+          - name: C_COMMENT
+            description: Free-text comment.
+
+      # ── NATION ──────────────────────────────────────────────────────────────
+      - name: nation
+        description: Reference table of nations.
+        columns:
+          - name: N_NATIONKEY
+            description: Unique nation identifier (primary key).
+            tests: [not_null, unique]
+          - name: N_NAME
+            description: Nation name.
+            tests: [not_null]
+          - name: N_REGIONKEY
+            description: Foreign key to REGION.R_REGIONKEY.
+            tests: [not_null]
+          - name: N_COMMENT
+            description: Free-text comment.
+
+
+      # ── LINEITEM ────────────────────────────────────────────────────────────
+      - name: lineitem
+        description: Line-level details for each order (one row per order item).
+        loaded_at_field: L_SHIPDATE
+        columns:
+          - name: L_ORDERKEY
+            description: Foreign key to ORDERS.O_ORDERKEY.
+            tests:
+              - not_null
+              - relationships:
+                  to: source('tpch', 'orders')
+                  field: O_ORDERKEY
+          - name: L_PARTKEY
+            description: Foreign key to PART.P_PARTKEY.
+            tests: [not_null]
+          - name: L_SUPPKEY
+            description: Foreign key to SUPPLIER.S_SUPPKEY.
+            tests: [not_null]
+          - name: L_LINENUMBER
+            description: Line number within the order.
+            tests: [not_null]
+          - name: L_QUANTITY
+            description: Quantity ordered.
+            tests: [not_null]
+          - name: L_EXTENDEDPRICE
+            description: Extended price (quantity * item price).
+            tests: [not_null]
+          - name: L_DISCOUNT
+            description: Discount applied to the line item.
+          - name: L_TAX
+            description: Tax rate applied.
+          - name: L_RETURNFLAG
+            description: Return status flag.
+          - name: L_LINESTATUS
+            description: Line status code.
+          - name: L_SHIPDATE
+            description: Date the item was shipped.
+            tests: [not_null]
+          - name: L_COMMITDATE
+            description: Date the order was committed.
+          - name: L_RECEIPTDATE
+            description: Date the item was received.
+          - name: L_SHIPINSTRUCT
+            description: Shipping instructions.
+          - name: L_SHIPMODE
+            description: Mode of shipping.
+          - name: L_COMMENT
+            description: Free-text comment on the line item.
